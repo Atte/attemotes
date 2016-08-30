@@ -3,6 +3,7 @@ import copy
 import glob
 import os
 import json
+import praw
 import fnmatch
 from PIL import Image
 
@@ -19,6 +20,12 @@ for fname in glob.iglob(CONFIG['images']):
 			break
 	else:
 		groups.setdefault('', set()).add(fname)
+
+reddit = praw.Reddit(user_agent='fi.atte.emoter (by /u/AtteLynx)')
+with open('oauth.json') as fh:
+	reddit.set_oauth_app_info(**json.load(fh))
+
+print(reddit.get_authorize_url('fi.atte.emoter', 'modconfig modposts submit', True))
 
 for group, images in groups.items():
 	config = copy.deepcopy(CONFIG)
