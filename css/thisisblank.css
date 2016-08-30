@@ -1,0 +1,41 @@
+a[href="/thisisblank"] em,
+a[href="/nothisisblank"] em,
+a[href="/everythingisblank"] em {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  color: black !important;
+  font-weight: normal;
+  text-align: left !important;
+  letter-spacing: -1px;
+  text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+  font-size: 20px;
+  padding-right: 5px;
+  font-family: "comic sans ms", "tscu_comic", sans-serif;
+  font-style: italic !important;
+}
+
+a[href="/thisisblank"] em {
+  width: 135px !important;
+  height: 70px !important;
+  top: 80px;
+  left: 110px;
+}
+
+a[href="/nothisisblank"] em {
+  width: 140px !important;
+  height: 80px !important;
+  top: 70px;
+  left: 0;
+  text-align: right !important;
+}
+
+a[href="/everythingisblank"] em {
+  width: 155px !important;
+  height: 115px !important;
+  top: 35px;
+  left: 90px;
+  font-size: 25px;
+  font-family: "Impact", "Charcoal", serif;
+  text-transform: uppercase;
+}

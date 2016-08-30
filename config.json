@@ -1,0 +1,24 @@
+{
+	"sub": "attemotes_test",
+	"max_css_kb": 100,
+	"max_img_kb": 500,
+	"max_img_num": 50,
+
+	"images": "img/*.png",
+	"styles": "css/*.css",
+
+	"margin": 2,
+	"max_height": 200,
+	
+	"groups": {
+		"cute*": {
+			"max_height": 100
+		},
+		"callingblueshift.png": {
+			"raw": true
+		},
+		"nosunshinenorrainbows.png": {
+			"raw": true
+		}
+	}
+}
