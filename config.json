@@ -4,21 +4,32 @@
 	"max_img_kb": 500,
 	"max_img_num": 50,
 
-	"images": "img/*.png",
-	"styles": "css/*.css",
+	"input": {
+		"images": "img/*.png",
+		"styles": "css/*.css"
+	},
+
+	"outdir": "out",
+	"fname": "emotes",
 
 	"margin": 2,
 	"max_height": 200,
 	
 	"groups": {
 		"cute*": {
+			"fname": "cutes",
 			"max_height": 100
 		},
-		"callingblueshift.png": {
+		"callingblueshift": {
+			"fname": "callblue",
 			"raw": true
 		},
-		"nosunshinenorrainbows.png": {
+		"nosunshinenorrainbows": {
+			"fname": "nosunrai",
 			"raw": true
+		},
+		"*isblank": {
+			"fname": "blanks"
 		}
 	}
 }
