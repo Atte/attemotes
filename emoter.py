@@ -22,6 +22,41 @@ assert CONFIG['outdir'] and CONFIG['outdir'] != '.'
 subprocess.run(['cleancss', '--version'], stdout=subprocess.DEVNULL, check=True)
 subprocess.run(['optipng', '--version'], stdout=subprocess.DEVNULL, check=True)
 
+# log in to Reddit (early to allow easy authentication the first time)
+try:
+	with open('oauth.json') as fh:
+		oauth = json.load(fh)
+except FileNotFoundError:
+	with open('oauth.json', 'w') as fh:
+		json.dump({
+			'app': {
+				'client_id': 'crgnKAZFz7bAOg',
+				'client_secret': '',
+				'redirect_uri': 'http://127.0.0.1:65010/authorize_callback',
+			},
+			'code': '',
+		}, fh)
+		print("Add client_secret to oauth.json")
+		sys.exit(0)
+
+reddit = praw.Reddit(user_agent='fi.atte.emoter (by /u/AtteLynx)')
+reddit.set_oauth_app_info(**oauth['app'])
+
+if oauth.get('refresh_token'):
+	reddit.set_access_credentials(**reddit.refresh_access_information(oauth['refresh_token']))
+elif oauth.get('code'):
+	access = reddit.get_access_information(oauth['code'])
+	oauth['refresh_token'] = access['refresh_token']
+	with open('oauth.json', 'w') as fh:
+		json.dump(oauth, fh, indent=4)
+	print("Token acquired!")
+	sys.exit(0)
+else:
+	print("Add code to oauth.json")
+	print(reddit.get_authorize_url('fi.atte.emoter', 'modconfig submit', True))
+	sys.exit(0)
+
+
 def file2name(file):
 	return os.path.splitext(os.path.basename(file))[0]
 
@@ -36,7 +71,8 @@ for fname in glob.iglob(CONFIG['input']['images']):
 		groups.setdefault('', set()).add(fname)
 
 # remove old build artifacts
-shutil.rmtree(CONFIG['outdir'])
+if os.path.exists(CONFIG['outdir']):
+	shutil.rmtree(CONFIG['outdir'])
 os.mkdir(CONFIG['outdir'])
 
 # load custom CSS
@@ -46,7 +82,7 @@ for fname in glob.iglob(CONFIG['input']['styles']):
 		css += fh.read()
 
 # resize images and generate CSS
-emotes = set()
+emotes = {}
 outfiles = set()
 for group_i, (group, fnames) in enumerate(groups.items()):
 	# merge group config
@@ -62,7 +98,7 @@ for group_i, (group, fnames) in enumerate(groups.items()):
 		assert len(fnames) == 1
 		fname = fnames.pop()
 		shutil.copy(fname, outname)
-		emotes.add(file2name(outname))
+		emotes[file2name(outname)] = config
 		with Image.open(fname) as img:
 			css += textwrap.dedent("""
 				a[href="/{name}"] {{
@@ -111,7 +147,7 @@ for group_i, (group, fnames) in enumerate(groups.items()):
 		# copy images onto target and generate per-emote rules
 		y = 0
 		for fname, img in zip(fnames, images):
-			emotes.add(file2name(fname))
+			emotes[file2name(fname)] = config
 			css += textwrap.dedent("""
 				a[href="/{name}"] {{
 					background-position: 0 -{y}px;
@@ -143,25 +179,6 @@ minfile = '{outdir}/style.min.css'.format(outdir=CONFIG['outdir'])
 subprocess.run(['cleancss', '-o', minfile, cssfile], check=True)
 subprocess.run(['optipng'] + list(outfiles), check=True)
 
-# log in to Reddit
-with open('oauth.json') as fh:
-	oauth = json.load(fh)
-
-reddit = praw.Reddit(user_agent='fi.atte.emoter (by /u/AtteLynx)')
-reddit.set_oauth_app_info(**oauth['app'])
-
-if oauth.get('refresh_token'):
-	reddit.set_access_credentials(**reddit.refresh_access_information(oauth['refresh_token']))
-elif oauth.get('code'):
-	access = reddit.get_access_information(oauth['code'])
-	oauth['refresh_token'] = access['refresh_token']
-	with open('oauth.json', 'w') as fh:
-		json.dump(oauth, fh, indent=4)
-	sys.exit(0)
-else:
-	print(reddit.get_authorize_url('fi.atte.emoter', 'modconfig submit', True))
-	sys.exit(0)
-
 # upload data to Reddit
 sub = reddit.get_subreddit(CONFIG['sub'])
 for fname in outfiles:
@@ -172,10 +189,11 @@ with open(minfile) as fh:
 	sub.set_stylesheet(fh.read())
 
 # make test post
+print("Shitposting...")
 sub.submit(
 	title=str(datetime.datetime.now()),
 	text=' '.join(
-		'[](/{name})'.format(name=name)
-		for name in sorted(emotes)
+		'[{text}](/{name})'.format(name=name, text='*testing*' if config.get('text', False) else '')
+		for name, config in sorted(emotes.items(), key=operator.itemgetter(0))
 	)
 )

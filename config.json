@@ -1,5 +1,5 @@
 {
-	"sub": "attemotes_test",
+	"sub": "attemotes",
 	"max_css_kb": 100,
 	"max_img_kb": 500,
 	"max_img_num": 50,
@@ -29,7 +29,8 @@
 			"raw": true
 		},
 		"*isblank": {
-			"fname": "blanks"
+			"fname": "blanks",
+			"text": true
 		}
 	}
 }
