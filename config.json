@@ -16,17 +16,17 @@
 	"max_height": 200,
 	
 	"groups": {
-		"cute*": {
-			"fname": "cutes",
-			"max_height": 100
-		},
 		"callingblueshift": {
-			"fname": "callblue",
+			"fname": "callingblueshift",
 			"raw": true
 		},
 		"nosunshinenorrainbows": {
-			"fname": "nosunrai",
+			"fname": "nosunshinenorrainbows",
 			"raw": true
+		},
+		"cute*": {
+			"fname": "cutes",
+			"max_height": 100
 		},
 		"*isblank": {
 			"fname": "blanks",
