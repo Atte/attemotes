@@ -31,6 +31,9 @@
 		"*isblank": {
 			"fname": "blanks",
 			"text": true
+		},
+		"quibblexited": {
+			"max_height": 100
 		}
 	}
 }
