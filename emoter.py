@@ -11,6 +11,7 @@ import datetime
 import operator
 import textwrap
 import subprocess
+import collections
 from PIL import Image
 
 with open('config.json') as fh:
@@ -60,15 +61,17 @@ else:
 def file2name(file):
 	return os.path.splitext(os.path.basename(file))[0]
 
-# collect configuration groups
-groups = {}
+# resolve configurations
+outfiles = collections.defaultdict(dict)
 for fname in glob.iglob(CONFIG['input']['images']):
-	for pattern in GROUP_CONFIG.keys():
+	for pattern, config in GROUP_CONFIG.items():
 		if fnmatch.fnmatch(file2name(fname), pattern):
-			groups.setdefault(pattern, set()).add(fname)
+			outfile = config.get('fname', CONFIG['fname'])
+			outfiles[outfile][fname] = copy.deepcopy(CONFIG)
+			outfiles[outfile][fname].update(config)
 			break
 	else:
-		groups.setdefault('', set()).add(fname)
+		outfiles[CONFIG['fname']][fname] = copy.deepcopy(CONFIG)
 
 # remove old build artifacts
 if os.path.exists(CONFIG['outdir']):
@@ -82,23 +85,16 @@ for fname in glob.iglob(CONFIG['input']['styles']):
 		css += fh.read()
 
 # resize images and generate CSS
-emotes = {}
-outfiles = set()
-for group_i, (group, fnames) in enumerate(groups.items()):
-	# merge group config
-	config = copy.deepcopy(CONFIG)
-	if group:
-		config.update(GROUP_CONFIG[group])
+outnames = set()
+for outfile, infiles in outfiles.items():
+	outname = '{outdir}/{fname}.png'.format(outdir=CONFIG['outdir'], fname=outfile)
+	outnames.add(outname)
 
-	outname = '{outdir}/{fname}.png'.format(outdir=config['outdir'], fname=config['fname'])
-	outfiles.add(outname)
-
-	if config.get('raw', False):
+	if len(infiles) == 1 and list(infiles.values())[0].get('raw', False):
 		# raw images; don't resize
-		assert len(fnames) == 1
-		fname = fnames.pop()
+		fname, config = list(infiles.items())[0]
+		config['outname'] = outname
 		shutil.copy(fname, outname)
-		emotes[file2name(outname)] = config
 		with Image.open(fname) as img:
 			css += textwrap.dedent("""
 				a[href="/{name}"] {{
@@ -114,17 +110,19 @@ for group_i, (group, fnames) in enumerate(groups.items()):
 		images = []
 		selectors = []
 		# resize images
-		for fname in fnames:
+		for fname, config in infiles.items():
+			config['outname'] = outname
 			img = Image.open(fname)
 			if img.height > config['max_height']:
-				images.append(img.resize((
+				config['image'] = img.resize((
 					round(img.width * (config['max_height'] / img.height)),
 					config['max_height'],
-				), Image.ANTIALIAS))
+				), Image.ANTIALIAS)
 				img.close()
 				img = None
 			else:
-				images.append(img)
+				config['image'] = img
+			images.append(config['image'])
 
 			selectors.append('a[href="/{name}"]'.format(name=file2name(fname)))
 
@@ -140,14 +138,14 @@ for group_i, (group, fnames) in enumerate(groups.items()):
 
 		# make target image of correct size
 		target = Image.new('RGBA', (
-			max(img.width for img in images),
-			sum(img.height + config['margin'] for img in images),
+			max(config['image'].width for config in infiles.values()),
+			sum(CONFIG['margin'] + config['image'].height for config in infiles.values()),
 		), (255, 255, 255, 255))
 
 		# copy images onto target and generate per-emote rules
 		y = 0
-		for fname, img in zip(fnames, images):
-			emotes[file2name(fname)] = config
+		for fname, config in infiles.items():
+			img = config['image']
 			css += textwrap.dedent("""
 				a[href="/{name}"] {{
 					background-position: 0 -{y}px;
@@ -162,7 +160,7 @@ for group_i, (group, fnames) in enumerate(groups.items()):
 			)
 
 			target.paste(img, (0, y))
-			y += img.height + config['margin']
+			y += img.height + CONFIG['margin']
 
 		target.save(outname)
 
@@ -177,12 +175,12 @@ with open(cssfile, 'w') as fh:
 # optimize outputs
 minfile = '{outdir}/style.min.css'.format(outdir=CONFIG['outdir'])
 subprocess.run(['cleancss', '-o', minfile, cssfile], check=True)
-subprocess.run(['optipng'] + list(outfiles), check=True)
+subprocess.run(['optipng'] + list(outnames), check=True)
 
 # upload data to Reddit
 sub = reddit.get_subreddit(CONFIG['sub'])
-for fname in outfiles:
-	print("Uploading {name}...".format(name=file2name(fname)))
+for fname in outnames:
+	print("Uploading {name}...".format(name=fname))
 	sub.upload_image(fname)
 print("Uploading CSS...")
 with open(minfile) as fh:
@@ -192,8 +190,9 @@ with open(minfile) as fh:
 print("Shitposting...")
 sub.submit(
 	title=str(datetime.datetime.now()),
-	text=' '.join(
-		'[{text}](/{name})'.format(name=name, text='*testing*' if config.get('text', False) else '')
-		for name, config in sorted(emotes.items(), key=operator.itemgetter(0))
-	)
+	text=' '.join(sorted(
+		'[{text}](/{name})'.format(name=file2name(fname), text='*testing*' if config.get('text', False) else '')
+		for infiles in outfiles.values()
+		for fname, config in infiles.items()
+	))
 )
