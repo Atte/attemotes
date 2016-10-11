@@ -1,0 +1,8 @@
+.link .usertext-body .md {
+    float: left;
+    background-color: gray;
+}
+
+.link .flat-list {
+    clear: left;
+}
