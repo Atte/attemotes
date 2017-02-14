@@ -1,39 +1,39 @@
 {
-	"sub": "attemotes",
-	"max_css_kb": 100,
-	"max_img_kb": 500,
-	"max_img_num": 50,
+    "sub": "attemotes",
+    "max_css_kb": 100,
+    "max_img_kb": 500,
+    "max_img_num": 50,
 
-	"input": {
-		"images": "img/*.png",
-		"styles": "css/*.css"
-	},
+    "input": {
+        "images": "img/*.png",
+        "styles": "css/*.css"
+    },
 
-	"outdir": "out",
-	"fname": "emotes",
+    "outdir": "out",
+    "fname": "emotes",
 
-	"margin": 2,
-	"max_height": 200,
-	
-	"groups": {
-		"callingblueshift": {
-			"fname": "callingblueshift",
-			"raw": true
-		},
-		"nosunshinenorrainbows": {
-			"fname": "nosunshinenorrainbows",
-			"raw": true
-		},
-		"cute*": {
-			"fname": "cutes",
-			"max_height": 100
-		},
-		"*isblank": {
-			"fname": "blanks",
-			"text": true
-		},
-		"quibblexited": {
-			"max_height": 100
-		}
-	}
+    "margin": 2,
+    "max_height": 200,
+
+    "groups": {
+        "callingblueshift": {
+            "fname": "callingblueshift",
+            "raw": true
+        },
+        "nosunshinenorrainbows": {
+            "fname": "nosunshinenorrainbows",
+            "raw": true
+        },
+        "cute*": {
+            "fname": "cutes",
+            "max_height": 100
+        },
+        "*isblank": {
+            "fname": "blanks",
+            "text": true
+        },
+        "quibblexited": {
+            "max_height": 100
+        }
+    }
 }
