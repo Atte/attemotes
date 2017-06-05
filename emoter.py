@@ -197,4 +197,10 @@ post = sub.submit(
         for fname, config in infiles.items()
     ))
 )
-webbrowser.open(post.shortlink)
+
+# open post if graphical, print otherwise
+if os.environ.get('DISPLAY'):
+	webbrowser.open(post.shortlink)
+else
+	print(post.shortlink)
+
