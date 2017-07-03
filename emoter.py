@@ -198,9 +198,7 @@ post = sub.submit(
     ))
 )
 
-# open post if graphical, print otherwise
+# open post if graphical
+print(post.shortlink)
 if os.environ.get('DISPLAY'):
 	webbrowser.open(post.shortlink)
-else
-	print(post.shortlink)
-
