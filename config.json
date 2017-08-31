@@ -38,6 +38,10 @@
         },
         "quibblexited": {
             "max_height": 100
+        },
+        "ow*": {
+            "fname": "owranks",
+            "max_height": 32
         }
     }
 }
