@@ -58,11 +58,10 @@ def css2names(source):
 # resolve configurations
 outfiles = collections.defaultdict(dict)
 for fname in glob.iglob(CONFIG['input']['images']):
-    for pattern, config in GROUP_CONFIG.items():
+    for pattern, config in sorted(GROUP_CONFIG.items(), key=lambda item: '*' in item[0]):
         if fnmatch.fnmatch(file2name(fname), pattern):
             outfile = config.get('fname', CONFIG['fname'])
-            outfiles[outfile][fname] = copy.deepcopy(CONFIG)
-            outfiles[outfile][fname].update(config)
+            outfiles[outfile].setdefault(fname, copy.deepcopy(CONFIG)).update(config)
             break
     else:
         outfiles[CONFIG['fname']][fname] = copy.deepcopy(CONFIG)

@@ -42,6 +42,9 @@
         "ow*": {
             "fname": "owranks",
             "max_height": 24
+        },
+        "owbronze": {
+            "max_height": 16
         }
     }
 }
