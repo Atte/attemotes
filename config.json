@@ -45,6 +45,9 @@
         },
         "owbronze": {
             "max_height": 16
+        },
+        "owsilver": {
+            "max_height": 20
         }
     }
 }
