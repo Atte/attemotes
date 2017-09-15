@@ -41,7 +41,7 @@
         },
         "ow*": {
             "fname": "owranks",
-            "max_height": 32
+            "max_height": 24
         }
     }
 }
