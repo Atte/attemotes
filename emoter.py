@@ -22,7 +22,7 @@ GROUP_CONFIG = CONFIG.pop('groups')
 
 # check pre-requisites
 assert CONFIG['outdir'] and CONFIG['outdir'] != '.'
-subprocess.run(['cleancss', '--version'], stdout=subprocess.DEVNULL, check=True)
+#subprocess.run(['cleancss', '--version'], stdout=subprocess.DEVNULL, check=True)
 subprocess.run(['optipng', '--version'], stdout=subprocess.DEVNULL, check=True)
 
 # log in to Reddit (early to allow easy authentication the first time)
@@ -163,7 +163,8 @@ with open(cssfile, 'w') as fh:
 
 # optimize outputs
 minfile = f"{CONFIG['outdir']}/style.min.css"
-subprocess.run(['cleancss', '-o', minfile, cssfile], check=True)
+shutil.copyfile(cssfile, minfile)
+#subprocess.run(['cleancss', '-o', minfile, cssfile], check=True)
 subprocess.run(['optipng'] + list(outnames), check=True)
 
 # diff CSS

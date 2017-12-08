@@ -48,6 +48,9 @@
         },
         "owsilver": {
             "max_height": 20
+        },
+        "*peek": {
+            "fname": "peeks"
         }
     }
 }
