@@ -80,7 +80,7 @@ for fname in glob.iglob(CONFIG['input']['styles']):
 # resize images and generate CSS
 outnames = set()
 for outfile, infiles in outfiles.items():
-    outname = f"{CONFIG['outdir']}/{outfile}.png"
+    outname = "{}/{}.png".format(CONFIG['outdir'], outfile)
     outnames.add(outname)
     name = file2name(outname)
 
@@ -90,16 +90,16 @@ for outfile, infiles in outfiles.items():
         config['outname'] = outname
         shutil.copy(fname, outname)
         with Image.open(fname) as img:
-            css += textwrap.dedent(f"""
+            css += textwrap.dedent("""
                 a[href="/{name}"] {{
                     float: left;
                     clear: none;
                     display: block;
                     background-image: url(%%{name}%%);
-                    width: {img.width}px;
-                    height: {img.height}px;
+                    width: {width}px;
+                    height: {height}px;
                 }}
-            """)
+            """.format(name=name, width=img.width, height=img.height))
     else:
         images = []
         selectors = []
@@ -118,18 +118,18 @@ for outfile, infiles in outfiles.items():
                 config['image'] = img
             images.append(config['image'])
 
-            selectors.append(f'a[href="/{file2name(fname)}"]')
+            selectors.append('a[href="/{}"]'.format(file2name(fname)))
         selectors = ',\n'.join(selectors)
 
         # common rule per output image file
-        css += textwrap.dedent(f"""
+        css += textwrap.dedent("""
             {selectors} {{
                 float: left;
                 clear: none;
                 display: block;
                 background-image: url(%%{name}%%);
             }}
-        """)
+        """.format(selectors=selectors, name=name))
 
         # make target image of correct size
         target = Image.new('RGBA', (
@@ -141,13 +141,13 @@ for outfile, infiles in outfiles.items():
         y = 0
         for fname, config in infiles.items():
             img = config['image']
-            css += textwrap.dedent(f"""
-                a[href="/{file2name(fname)}"] {{
+            css += textwrap.dedent("""
+                a[href="/{fname}"] {{
                     background-position: 0 -{y}px;
-                    width: {img.width}px;
-                    height: {img.height}px;
+                    width: {width}px;
+                    height: {height}px;
                 }}
-            """)
+            """.format(fname=file2name(fname), y=y, width=img.width, height=img.height))
             target.paste(img, (0, y))
             y += img.height + CONFIG['margin']
 
@@ -157,12 +157,12 @@ for outfile, infiles in outfiles.items():
             img.close()
 
 # write CSS to file
-cssfile = f"{CONFIG['outdir']}/style.css"
+cssfile = CONFIG['outdir'] + "/style.css"
 with open(cssfile, 'w') as fh:
     fh.write(css)
 
 # optimize outputs
-minfile = f"{CONFIG['outdir']}/style.min.css"
+minfile = CONFIG['outdir'] + "/style.min.css"
 shutil.copyfile(cssfile, minfile)
 #subprocess.run(['cleancss', '-o', minfile, cssfile], check=True)
 subprocess.run(['optipng'] + list(outnames), check=True)
@@ -174,15 +174,15 @@ with open(minfile) as fh:
 old_emotes = css2names(old_css)
 new_emotes = css2names(new_css)
 diff = ' '.join(sorted(
-    [f"+{name}" for name in new_emotes - old_emotes] +
-    [f"-{name}" for name in old_emotes - new_emotes]
+    ["+" + name for name in new_emotes - old_emotes] +
+    ["-" + name for name in old_emotes - new_emotes]
 ))
-print(f"Changes: {diff}")
+print("Changes: " + diff)
 
 # upload data to Reddit
 for fname in outnames:
     name, ext = os.path.splitext(os.path.basename(fname))
-    print(f"Uploading {name}...")
+    print("Uploading " + name)
     sub.stylesheet.upload(name, fname)
 print("Uploading CSS...")
 sub.stylesheet.update(new_css, reason=diff)
