@@ -36,7 +36,7 @@ except FileNotFoundError:
             'client_secret': '',
             'username': '',
             'password': ''
-        }, fh)
+        }, fh, indent=4)
         print("Add credentials to auth.json")
         sys.exit(0)
 
